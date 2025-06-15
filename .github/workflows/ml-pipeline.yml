@@ -1,0 +1,82 @@
+name: ML Model Training and Deployment
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - 'mlops-hw2-model-training-experiments/**'
+      - 'mlops-hw3-model-inference/**'
+  pull_request:
+    branches: [ main ]
+    paths:
+      - 'mlops-hw2-model-training-experiments/**'
+      - 'mlops-hw3-model-inference/**'
+  workflow_dispatch:  # Allow manual trigger
+
+env:
+  DOCKER_IMAGE: ghcr.io/${{ github.repository }}/yolo-model
+  DOCKER_TAG: ${{ github.sha }}
+
+jobs:
+  train:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.9'
+          
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r mlops-hw2-model-training-experiments/yolo-cpu/requirements.txt
+          
+      - name: Run model training
+        run: |
+          cd mlops-hw2-model-training-experiments/yolo-cpu
+          python train.py
+          
+      - name: Run tests
+        run: |
+          cd mlops-hw2-model-training-experiments/yolo-cpu
+          python -m pytest tests/
+          
+      - name: Save model artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: trained-model
+          path: mlops-hw2-model-training-experiments/yolo-cpu/runs/train/exp/weights/best.pt
+          
+  build-and-push:
+    needs: train
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - uses: actions/checkout@v3
+      
+      - name: Download model artifacts
+        uses: actions/download-artifact@v3
+        with:
+          name: trained-model
+          path: mlops-hw3-model-inference/model
+          
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+        
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v2
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+          
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v4
+        with:
+          context: ./mlops-hw3-model-inference
+          push: true
+          tags: ${{ env.DOCKER_IMAGE }}:${{ env.DOCKER_TAG }},${{ env.DOCKER_IMAGE }}:latest 
