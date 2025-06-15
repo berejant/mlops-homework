@@ -16,6 +16,8 @@ on:
 env:
   DOCKER_IMAGE: ghcr.io/${{ github.repository }}/yolo-model
   DOCKER_TAG: ${{ github.sha }}
+  WANDB_PROJECT: setuniversity-mlops-s25
+  WANDB_RUN_NAME: github-actions-run
 
 jobs:
   train:
@@ -35,6 +37,8 @@ jobs:
           pip install -r requirements.txt
           
       - name: Run model training
+        env:
+          WANDB_API_KEY: ${{ secrets.WANDB_API_KEY }}
         run: |
           cd mlops-hw2-model-training-experiments/yolo-cpu
           python train_yolo.py
@@ -52,7 +56,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: trained-model
-          path: mlops-hw2-model-training-experiments/yolo-cpu/runs/train/exp/weights/best.pt
+          path: mlops-hw2-model-training-experiments/yolo-cpu/setuniversity-mlops-s25/*/weights/*.pt
           if-no-files-found: error
           
   build-and-push:
