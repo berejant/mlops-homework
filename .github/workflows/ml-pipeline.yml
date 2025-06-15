@@ -36,6 +36,11 @@ jobs:
           cd mlops-hw2-model-training-experiments/yolo-cpu
           pip install -r requirements.txt
           
+      - name: Install OpenGL dependencies
+        run: |
+          apt-get update
+          apt-get install -y libgl1-mesa-glx
+          
       - name: Run model training
         env:
           WANDB_API_KEY: ${{ secrets.WANDB_API_KEY }}
@@ -87,6 +92,6 @@ jobs:
       - name: Build and push Docker image
         uses: docker/build-push-action@v5
         with:
-          context: ./mlops-hw3-model-inference
+          context: ./mlops-hw3-model-inference/FastAPI_Docker
           push: true
           tags: ${{ env.DOCKER_IMAGE }}:${{ env.DOCKER_TAG }},${{ env.DOCKER_IMAGE }}:latest 
