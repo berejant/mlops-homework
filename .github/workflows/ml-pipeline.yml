@@ -16,6 +16,7 @@ on:
 env:
   DOCKER_IMAGE: ghcr.io/${{ github.repository }}/yolo-model
   DOCKER_TAG: ${{ github.sha }}
+  WANDB_MODE: online  # Ensure W&B is online for logging
 
 jobs:
   train:

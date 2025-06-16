@@ -23,6 +23,9 @@ def setup_wandb_environment():
     """Налаштовує середовище W&B та вмикає інтеграцію YOLO W&B"""
     # Завантажуємо змінні середовища
     load_dotenv()
+
+    os.environ["WANDB_MODE"] = "online"
+
     
     # Отримуємо API ключ W&B з середовища
     wandb_api_key = os.getenv('WANDB_API_KEY')
@@ -83,9 +86,14 @@ def train_model(config):
     
     # Починаємо тренування - YOLO автоматично логуватиме в W&B
     results = model.train(**train_args)
+
+    wandb.finish()
     
     print("✅ Training completed with built-in W&B logging!")
     
+    print("Training results:", results)
+    print("W&B run URL:", wandb.run.get_url())
+
     return model, results
 
 def main():
