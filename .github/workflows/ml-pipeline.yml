@@ -16,8 +16,6 @@ on:
 env:
   DOCKER_IMAGE: ghcr.io/${{ github.repository }}/yolo-model
   DOCKER_TAG: ${{ github.sha }}
-  WANDB_PROJECT: setuniversity-mlops-s25
-  WANDB_RUN_NAME: yolo-model-training-${{ github.run_id }}
 
 jobs:
   train:
@@ -44,15 +42,26 @@ jobs:
           echo "Checking wandb configuration..."
           python -c "
           import wandb
-          print('Wandb version:', wandb.__version__)
-          print('Wandb API key length:', len('$WANDB_API_KEY'))
-          print('Wandb project:', '$WANDB_PROJECT')
-          print('Wandb run name:', '$WANDB_RUN_NAME')
+          from dotenv import load_dotenv
+          from train_yolo import load_config
+          import os
+
+          load_dotenv()
+          config = load_config()
+          print('Wandb configuration loaded:', config)
+
           try:
-              wandb.login(key='$WANDB_API_KEY')
-              print('Successfully logged in to wandb')
+              wandb_api_key = os.getenv('WANDB_API_KEY')
+              wandb.login(key=wandb_api_key)
+              print("✅ Successfully logged in to W&B")
+              
+              # Вмикаємо логування W&B в налаштуваннях YOLO
+              from ultralytics.utils import SETTINGS
+              SETTINGS['wandb'] = True
+              print("✅ W&B logging enabled in YOLO settings")
+              
           except Exception as e:
-              print('Error logging in to wandb:', str(e))
+              print(f"❌ Failed to setup W&B: {e}")
           "
           
       - name: Run model training
