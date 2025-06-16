@@ -2,3 +2,4 @@
 datasets
 setuniversity-mlops-s25
 wandb
+__pycache__
