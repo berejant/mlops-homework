@@ -90,9 +90,6 @@ def train_model(config):
     wandb.finish()
     
     print("✅ Training completed with built-in W&B logging!")
-    
-    print("Training results:", results)
-    print("W&B run URL:", wandb.run.get_url())
 
     return model, results
 
