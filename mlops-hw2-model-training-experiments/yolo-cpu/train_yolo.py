@@ -8,6 +8,8 @@
 import os
 import yaml
 import wandb
+from wandb.integration.ultralytics import add_wandb_callback
+
 from pathlib import Path
 from dotenv import load_dotenv
 from ultralytics import YOLO
@@ -25,7 +27,6 @@ def setup_wandb_environment():
     load_dotenv()
 
     os.environ["WANDB_MODE"] = "online"
-
     
     # Отримуємо API ключ W&B з середовища
     wandb_api_key = os.getenv('WANDB_API_KEY')
@@ -61,6 +62,8 @@ def train_model(config):
     
     # Ініціалізуємо модель
     model = YOLO(config['model'])
+
+    add_wandb_callback(model, enable_model_checkpointing=True)
     
     # Параметри тренування - YOLO автоматично обробить інтеграцію W&B
     train_args = {
@@ -87,8 +90,6 @@ def train_model(config):
     # Починаємо тренування - YOLO автоматично логуватиме в W&B
     results = model.train(**train_args)
 
-    wandb.finish()
-    
     print("✅ Training completed with built-in W&B logging!")
 
     return model, results
