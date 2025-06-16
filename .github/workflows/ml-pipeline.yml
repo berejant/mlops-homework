@@ -35,6 +35,9 @@ jobs:
           python -m pip install --upgrade pip
           cd mlops-hw2-model-training-experiments/yolo-cpu
           pip install -r requirements.txt
+
+      - name: Activate YOLO wandb
+        run: yolo settings wandb=True
           
       - name: Debug wandb configuration
         env:
