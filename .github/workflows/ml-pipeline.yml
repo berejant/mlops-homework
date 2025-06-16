@@ -27,6 +27,7 @@ jobs:
         uses: actions/setup-python@v4
         with:
           python-version: '3.9'
+          cache: 'pip'
           cache-dependency-path: 'mlops-hw2-model-training-experiments/yolo-cpu/requirements.txt'
       - name: Install dependencies
         run: |
