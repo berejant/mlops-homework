@@ -17,7 +17,7 @@ env:
   DOCKER_IMAGE: ghcr.io/${{ github.repository }}/yolo-model
   DOCKER_TAG: ${{ github.sha }}
   WANDB_PROJECT: setuniversity-mlops-s25
-  WANDB_RUN_NAME: github-actions-run
+  WANDB_RUN_NAME: yolo-model-training-${{ github.run_id }}
 
 jobs:
   train:
@@ -35,6 +35,25 @@ jobs:
           python -m pip install --upgrade pip
           cd mlops-hw2-model-training-experiments/yolo-cpu
           pip install -r requirements.txt
+          
+      - name: Debug wandb configuration
+        env:
+          WANDB_API_KEY: ${{ secrets.WANDB_API_KEY }}
+        run: |
+          cd mlops-hw2-model-training-experiments/yolo-cpu
+          echo "Checking wandb configuration..."
+          python -c "
+          import wandb
+          print('Wandb version:', wandb.__version__)
+          print('Wandb API key length:', len('$WANDB_API_KEY'))
+          print('Wandb project:', '$WANDB_PROJECT')
+          print('Wandb run name:', '$WANDB_RUN_NAME')
+          try:
+              wandb.login(key='$WANDB_API_KEY')
+              print('Successfully logged in to wandb')
+          except Exception as e:
+              print('Error logging in to wandb:', str(e))
+          "
           
       - name: Run model training
         env:
