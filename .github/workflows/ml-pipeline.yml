@@ -27,7 +27,7 @@ jobs:
         uses: actions/setup-python@v4
         with:
           python-version: '3.9'
-          
+          cache-dependency-path: 'mlops-hw2-model-training-experiments/yolo-cpu/requirements.txt'
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
@@ -53,15 +53,15 @@ jobs:
           try:
               wandb_api_key = os.getenv('WANDB_API_KEY')
               wandb.login(key=wandb_api_key)
-              print("✅ Successfully logged in to W&B")
+              print("Successfully logged in to W&B")
               
               # Вмикаємо логування W&B в налаштуваннях YOLO
               from ultralytics.utils import SETTINGS
               SETTINGS['wandb'] = True
-              print("✅ W&B logging enabled in YOLO settings")
+              print("W&B logging enabled in YOLO settings")
               
           except Exception as e:
-              print(f"❌ Failed to setup W&B: {e}")
+              print(f"Failed to setup W&B: {e}")
           "
           
       - name: Run model training
