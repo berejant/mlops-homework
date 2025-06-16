@@ -53,16 +53,20 @@ jobs:
 
           try:
               wandb_api_key = os.getenv('WANDB_API_KEY')
-              wandb.login(key=wandb_api_key)
-              print("Successfully logged in to W&B")
+              if not wandb_api_key:
+                  print('WARNING: WANDB_API_KEY not found in environment variables')
+              else:
+                  print('WANDB_API_KEY found (length: {})'.format(len(wandb_api_key)))
+                  wandb.login(key=wandb_api_key)
+                  print('Successfully logged in to W&B')
               
-              # Вмикаємо логування W&B в налаштуваннях YOLO
+              # Enable W&B logging in YOLO settings
               from ultralytics.utils import SETTINGS
               SETTINGS['wandb'] = True
-              print("W&B logging enabled in YOLO settings")
+              print('W&B logging enabled in YOLO settings')
               
           except Exception as e:
-              print(f"Failed to setup W&B: {e}")
+              print('Failed to setup W&B:', str(e))
           "
           
       - name: Run model training
