@@ -55,6 +55,9 @@ def train_model(config):
     
     # Перевизначаємо run_name змінною середовища, якщо встановлено
     run_name = os.getenv('WANDB_RUN_NAME', config['run_name'])
+
+
+    wandb.init(project=config['wandb_project'], name=run_name)
     
     print("🚀 Starting YOLOv8n training on CPU...")
     print(f"📊 W&B Project: {config['wandb_project']}")
