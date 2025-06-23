@@ -3,7 +3,7 @@
 1. Нагуглив картинки приватних будинків
 2. Закинув в папки для підготовки датасет
 3. Підняв контейнери - MinIO and Label Studio
-4. Розмітив дані в Lbael Studio
+4. Розмітив дані в Label Studio
 5. Закоммітив це все діло в Git with DVC
 6. Записав [відеосик](https://www.awesomescreenshot.com/video/40120914?key=35865c81d577a24c9e45971827a63f69)
 7. Закинув в github
