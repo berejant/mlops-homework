@@ -18,7 +18,7 @@ import ray
 from ray import serve
 from ray.serve.handle import DeploymentHandle
 
-#serve.start(http_options={"host": "0.0.0.0", "port": 8001})
+serve.start(http_options={"host": "0.0.0.0", "port": 8000})
 
 app = FastAPI()
 
@@ -89,7 +89,7 @@ class ImageClassifier:
     @staticmethod
     def preprocess_image(image_bytes):
         img = Image.open(io.BytesIO(image_bytes)).convert('RGB')
-        img = img.resize((224, 224))  # Adjust if your model expects a different size
+        img = img.resize((128, 128))
         img_array = np.array(img) / 255.0
         img_array = np.expand_dims(img_array, axis=0)
         return img_array
@@ -101,6 +101,7 @@ class ImageClassifier:
             img_bytes = response.content
             input_tensor = self.preprocess_image(img_bytes)
             preds = self.model.predict(input_tensor)
+            print(preds)
             pred_class = CLASS_NAMES[int(np.argmax(preds))]
             confidence = float(np.max(preds))
             return {"class": pred_class, "confidence": confidence}
