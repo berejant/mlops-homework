@@ -17,7 +17,7 @@ from tensorflow.keras.layers import GlobalAveragePooling2D, Dense, Dropout
 from tensorflow.keras.models import Model
 from tensorflow.keras.callbacks import EarlyStopping, ReduceLROnPlateau
 import wandb
-from wandb.integration.keras import WandbCallback
+from wandb.integration.keras import WandbMetricsLogger, WandbModelCheckpoint
 
 # Constants
 CSV_PATH = 'dataset/dataset.csv'
@@ -33,7 +33,7 @@ def download_image_from_s3(s3_path, local_path):
         's3',
         aws_access_key_id=os.getenv('MINIO_ACCESS_KEY'),
         aws_secret_access_key=os.getenv('MINIO_SECRET_KEY'),
-        endpoint_url='http://localhost:9000'
+        endpoint_url=os.getenv('MINIO_ENDPOINT', 'http://localhost:9000'),
     )
     bucket, key = s3_path.replace('s3://', '').split('/', 1)
     os.makedirs(os.path.dirname(local_path), exist_ok=True)
@@ -92,7 +92,7 @@ def main():
         train_gen,
         validation_data=val_gen,
         epochs=EPOCHS,
-        callbacks=[early_stop, reduce_lr, WandbCallback()]
+        callbacks=[early_stop, reduce_lr, WandbMetricsLogger(), WandbModelCheckpoint(filepath="wandb_model.keras", monitor="val_loss", save_best_only=True)]
     )
     # Save model
     model.save('cats_dogs_classifier.keras')
