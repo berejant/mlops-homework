@@ -2,9 +2,9 @@
 set -e
 
 PROJECT_ID=${1:-1}  # Default project ID is 1
-OUTPUT_FILE="dataset/yolo_export.zip"  # Default output filename
+OUTPUT_FILE="dataset/dataset.csv"  # Default output filename
 
-if [ -z "$REFRESH_TOKEN" ]; then
+if [ -z "$STUDIO_REFRESH_TOKEN" ]; then
   echo "Error: REFRESH_TOKEN environment variable is not set."
   echo "Usage: export REFRESH_TOKEN=your_token"
   echo "Then run: ./export_yolo.sh [project_id]"
@@ -14,16 +14,16 @@ fi
 echo "Getting access token..."
 ACCESS_TOKEN=$(curl -s -X POST http://localhost:8080/api/token/refresh \
   -H "Content-Type: application/json" \
-  -d "{\"refresh\": \"$REFRESH_TOKEN\"}" | grep -o '"access":"[^"]*"' | cut -d'"' -f4)
+  -d "{\"refresh\": \"$STUDIO_REFRESH_TOKEN\"}" | grep -o '"access":"[^"]*"' | cut -d'"' -f4)
 
-if [ -z "$ACCESS_TOKEN" ]; then
+if [ -z "$STUDIO_REFRESH_TOKEN" ]; then
   echo "Error: Failed to get access token. Check your refresh token and Label Studio availability."
   exit 1
 fi
 
-echo "Exporting data from project #${PROJECT_ID} in YOLO format..."
+echo "Exporting data from project #${PROJECT_ID} in CSV format..."
 curl -s -H "Authorization: Bearer $ACCESS_TOKEN" \
-  "http://localhost:8080/api/projects/$PROJECT_ID/export?exportType=YOLO" \
+  "http://localhost:8080/api/projects/$PROJECT_ID/export?exportType=CSV" \
   -o "$OUTPUT_FILE"
 
 if [ -s "$OUTPUT_FILE" ]; then
@@ -33,4 +33,4 @@ else
   exit 1
 fi
 
-echo "Done. You can now use the exported data for your YOLO model training." 
+echo "Done. You can now use the exported data for your CSV model training." 

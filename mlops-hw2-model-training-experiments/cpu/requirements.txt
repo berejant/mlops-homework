@@ -8,3 +8,7 @@ numpy
 matplotlib
 pyyaml
 python-dotenv
+boto3
+pandas
+sklearn
+tensorflow

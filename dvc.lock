@@ -1,0 +1,4 @@
+schema: '2.0'
+stages:
+  export_dataset:
+    cmd: ./mlops-hw1-dataset-and-labeling/export_json.sh

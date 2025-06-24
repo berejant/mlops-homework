@@ -17,7 +17,7 @@ weight_decay: 0.0005
 
 # Інтеграція W&B
 wandb_project: "setuniversity-mlops-s25"
-run_name: "yolo-ray-training"
+run_name: "mobilenetv2-csv"
 
 # Збереження моделі
 save: true

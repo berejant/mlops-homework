@@ -118,7 +118,10 @@ def main():
     wandb_env = {
         'WANDB_API_KEY': os.getenv('WANDB_API_KEY'),
         'WANDB_PROJECT': os.getenv('WANDB_PROJECT'),
-        'WANDB_ENTITY': os.getenv('WANDB_ENTITY')
+        'WANDB_ENTITY': os.getenv('WANDB_ENTITY'),
+        'MINIO_ENDPOINT': os.getenv('MINIO_ENDPOINT', 'http://localhost:9000'),
+        'MINIO_ACCESS_KEY': os.getenv('MINIO_ACCESS_KEY'),
+        'MINIO_SECRET_KEY': os.getenv('MINIO_SECRET_KEY')
     }
     
     # Перевіряємо конфігурацію W&B (не показуючи значення)
@@ -158,7 +161,7 @@ def main():
         
         # Завантажуємо конфігурацію для отримання базової назви запуску
         config = load_config()
-        base_run_name = config.get('run_name', 'yolo-ray-training') if config else 'yolo-ray-training'
+        base_run_name = config.get('run_name', 'mobilenetv2-csv') if config else 'mobilenetv2-csv'
         
         # Генеруємо динамічну назву запуску з часовою міткою
         timestamp = datetime.now().strftime('%Y%m%d-%H%M%S')
