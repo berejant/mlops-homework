@@ -3,3 +3,4 @@ postgres-data
 mydata
 access_token.txt
 /dataset
+.env
