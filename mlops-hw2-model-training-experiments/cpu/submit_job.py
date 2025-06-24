@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python3.10
 """
 Скрипт подання завдання Ray
 Подає ray_job.py як завдання Ray з завантаженням файлів
@@ -39,7 +39,7 @@ def load_config(config_path="config.yaml"):
 
 def check_required_files():
     """Перевіряє, чи існують всі необхідні файли"""
-    required_files = ["train_yolo.py", "config.yaml", "requirements.txt", "ray_job.py"]
+    required_files = ["train.py", "config.yaml", "requirements.txt", "ray_job.py", "dataset.csv"]
     missing_files = [f for f in required_files if not Path(f).exists()]
     
     if missing_files:
@@ -52,10 +52,11 @@ def check_required_files():
 def prepare_job_files():
     """Підготовляє файли для завдання Ray"""
     files_to_upload = [
-        "train_yolo.py",
+        "train.py",
         "config.yaml", 
         "requirements.txt",
-        "ray_job.py"
+        "ray_job.py",
+        "dataset.csv"
     ]
     
     file_contents = {}
@@ -70,36 +71,51 @@ def prepare_job_files():
     
     return file_contents
 
+def run_subprocess_with_streaming(cmd, shell=False, check=False, text=True, env=None):
+    """Run a subprocess and stream stdout and stderr in real time."""
+    import subprocess
+    process = subprocess.Popen(
+        cmd,
+        shell=shell,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.STDOUT,
+        text=text,
+        bufsize=1,
+        env=env
+    )
+    output = []
+    for line in process.stdout:
+        print(line, end='')
+        output.append(line)
+    process.stdout.close()
+    return_code = process.wait()
+    if check and return_code != 0:
+        raise subprocess.CalledProcessError(return_code, cmd, ''.join(output))
+    return return_code
+
 @ray.remote
 def run_ray_job(file_contents):
     """Запускає ray_job.py на воркері Ray з завантаженими файлами"""
-    import subprocess
     import sys
     import tempfile
     import os
-    
     # Створюємо тимчасову директорію та записуємо файли
     temp_dir = tempfile.mkdtemp()
     os.chdir(temp_dir)
-    
     # Записуємо всі файли на воркер
     for filename, content in file_contents.items():
         with open(filename, 'w') as f:
             f.write(content)
-    
-    # Змінні середовища тепер встановлюються через runtime_env
     print("✅ Files uploaded and environment configured")
-    
-    # Запускаємо ray_job.py
     try:
-        result = subprocess.run([sys.executable, "ray_job.py"], 
-                              capture_output=True, text=True, check=True)
-        print(result.stdout)
-        return True
-    except subprocess.CalledProcessError as e:
-        print(f"❌ ray_job.py failed: {e}")
-        print(f"STDOUT: {e.stdout}")
-        print(f"STDERR: {e.stderr}")
+        return_code = run_subprocess_with_streaming([sys.executable, "ray_job.py"], check=False)
+        if return_code == 0:
+            return True
+        else:
+            print(f"❌ ray_job.py failed with exit code {return_code}")
+            return False
+    except Exception as e:
+        print(f"❌ Error: {e}")
         return False
 
 def main():
@@ -209,4 +225,7 @@ def main():
         print("🔌 Ray connection closed")
 
 if __name__ == "__main__":
+    import os
+    import sys
+
     main() 

@@ -19,8 +19,11 @@ from tensorflow.keras.callbacks import EarlyStopping, ReduceLROnPlateau
 import wandb
 from wandb.integration.keras import WandbMetricsLogger, WandbModelCheckpoint
 
+
+CSV_PATHs = ['dataset/dataset.csv', 'dataset.csv']
+
 # Constants
-CSV_PATH = 'dataset/dataset.csv'
+CSV_PATH = next((path for path in CSV_PATHs if os.path.exists(path)), None)
 IMAGES_DIR = 'dataset/images'
 IMG_SIZE = (128, 128)
 BATCH_SIZE = 32

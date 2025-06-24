@@ -1,3 +1,4 @@
+#!/usr/bin/env python3.10
 import ray
 from ray import serve
 import os
@@ -12,6 +13,7 @@ ray.init(
     runtime_env={
         "working_dir": ".",
         "pip": [
+            "tensorflow",
             "ultralytics",
             "wandb", 
             "python-dotenv",
@@ -19,8 +21,6 @@ ray.init(
             "matplotlib",
             "seaborn",
             "scikit-learn",
-            "torch",
-            "torchvision"
         ],
         "env_vars": {
             "OPENCV_IO_ENABLE_OPENEXR": "0",
@@ -30,14 +30,14 @@ ray.init(
             # Передаємо wandb змінні середовища в Ray
             "WANDB_PROJECT": os.getenv("WANDB_PROJECT", "linear-regression-pytorch"),
             "WANDB_ENTITY": os.getenv("WANDB_ENTITY", "berejant-set-university"),
-            "WANDB_MODEL_ARTIFACT": os.getenv("WANDB_MODEL_ARTIFACT", "berejant-set-university/linear-regression-pytorch/linear_regression_model:latest"),
+            "WANDB_MODEL_ARTIFACT": os.getenv("WANDB_MODEL_ARTIFACT", "berejant-set-university/catdog-mobilenetv2/run_n0h1n2re_model:latest"),
             "WANDB_API_KEY": os.getenv("WANDB_API_KEY", ""),
             "WANDB_MODE": os.getenv("WANDB_MODE", "online"),
             "WANDB_SILENT": "true"
         }
     }
 )
-        
+
 # Імпорт застосунку після ініціалізації Ray
 from object_detection import entrypoint
 

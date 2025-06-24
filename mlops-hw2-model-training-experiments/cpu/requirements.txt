@@ -10,5 +10,6 @@ pyyaml
 python-dotenv
 boto3
 pandas
-sklearn
+scikit-learn
 tensorflow
+ray

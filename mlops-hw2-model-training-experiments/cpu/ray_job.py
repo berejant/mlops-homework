@@ -9,28 +9,47 @@ import sys
 import subprocess
 from pathlib import Path
 
+def run_subprocess_with_streaming(cmd, shell=False, check=False, text=True, env=None):
+    """Run a subprocess and stream stdout and stderr in real time."""
+    process = subprocess.Popen(
+        cmd,
+        shell=shell,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.STDOUT,
+        text=text,
+        bufsize=1,
+        env=env
+    )
+    output = []
+    for line in process.stdout:
+        print(line, end='')
+        output.append(line)
+    process.stdout.close()
+    return_code = process.wait()
+    if check and return_code != 0:
+        raise subprocess.CalledProcessError(return_code, cmd, ''.join(output))
+    return return_code
+
 def install_system_dependencies():
     """Встановлює системні залежності, необхідні для OpenCV"""
     print("🔧 Installing system dependencies...")
     try:
         # Перевіряємо, чи маємо доступ sudo та чи доступний apt
-        result = subprocess.run(["which", "apt"], capture_output=True)
-        if result.returncode != 0:
+        result = run_subprocess_with_streaming(["which", "apt"], check=False)
+        if result != 0:
             print("⚠️  apt not found, skipping system dependencies")
             return True
-        
         # Встановлюємо libgl1 та інші залежності OpenCV
-        result = subprocess.run(
+        run_subprocess_with_streaming(
             "sudo apt update && sudo apt install -y libgl1-mesa-glx libglib2.0-0 libsm6 libxext6 libxrender-dev libgomp1",
-            shell=True, capture_output=True, text=True, check=True
+            shell=True, check=True
         )
         print("✅ System dependencies installed successfully")
         return True
-        
     except subprocess.CalledProcessError as e:
         print(f"⚠️  Failed to install system dependencies: {e}")
         print("   This might cause OpenCV issues, but continuing...")
-        print(f"   STDERR: {e.stderr}")
+        print(f"   STDERR: {e.output if hasattr(e, 'output') else ''}")
         return True  # Продовжуємо в будь-якому випадку, оскільки це може бути не критично
     except Exception as e:
         print(f"⚠️  Error installing system dependencies: {e}")
@@ -40,14 +59,14 @@ def install_requirements():
     """Встановлює Python вимоги на воркері"""
     print("📦 Installing Python requirements...")
     try:
-        result = subprocess.run([
+        run_subprocess_with_streaming([
             sys.executable, "-m", "pip", "install", "-r", "requirements.txt"
-        ], capture_output=True, text=True, check=True)
+        ], check=True)
         print("✅ Python requirements installed successfully")
         return True
     except subprocess.CalledProcessError as e:
         print(f"❌ Failed to install Python requirements: {e}")
-        print(f"STDERR: {e.stderr}")
+        print(f"STDERR: {e.output if hasattr(e, 'output') else ''}")
         return False
 
 def setup_environment():
@@ -68,28 +87,15 @@ def run_yolo_training():
     """Запускає тренування YOLO на воркері"""
     print("🚀 Starting YOLO training...")
     try:
-        # Запускаємо тренування з виводом в реальному часі
-        process = subprocess.Popen(
-            [sys.executable, "train_yolo.py"],
-            stdout=subprocess.PIPE,
-            stderr=subprocess.STDOUT,
-            universal_newlines=True,
-            bufsize=1
-        )
-        
-        # Виводимо вивід в реальному часі
-        for line in process.stdout:
-            print(line.strip())
-        
-        process.wait()
-        
-        if process.returncode == 0:
+        return_code = run_subprocess_with_streaming([
+            sys.executable, "train.py"
+        ], check=False)
+        if return_code == 0:
             print("✅ Training completed successfully")
             return True
         else:
-            print(f"❌ Training failed with return code: {process.returncode}")
+            print(f"❌ Training failed with return code: {return_code}")
             return False
-            
     except Exception as e:
         print(f"❌ Training failed: {e}")
         return False

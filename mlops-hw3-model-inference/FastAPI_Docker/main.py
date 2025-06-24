@@ -1,52 +1,40 @@
-from typing import List
-import pandas as pd
-from fastapi import FastAPI
-from pydantic import BaseModel
-import torch.nn as nn
-import torch
+from fastapi import FastAPI, File, UploadFile
+from fastapi.responses import JSONResponse
+from tensorflow import keras
+from PIL import Image
+import numpy as np
+import io
 
 # Ініціалізація FastAPI
 app = FastAPI()
 
-# Клас для лінійної регресії
-class LinearRegressionModel(nn.Module):
-    def __init__(self):
-        super(LinearRegressionModel, self).__init__()
-        self.linear = nn.Linear(1, 1)
+# Load Keras model
+MODEL_PATH = 'model/cat_dog_nothing_model.keras'  # Adjust path as needed
+model = keras.models.load_model(MODEL_PATH)
 
-    def forward(self, x):
-        return self.linear(x)
+# Class labels
+CLASS_NAMES = ['cat', 'dog', 'nothing']
 
-# Завантаження моделі
-model = LinearRegressionModel()
-model.load_state_dict(torch.load('model/linear_regression_model.pth'))
-model.eval()
-
-# Клас для визначення структури вхідних даних
-class CarYears(BaseModel):
-    years: List[float]
+# Preprocessing function (adjust target size as per your model)
+def preprocess_image(image_bytes):
+    img = Image.open(io.BytesIO(image_bytes)).convert('RGB')
+    img = img.resize((224, 224))  # Change size if your model expects different
+    img_array = np.array(img) / 255.0  # Normalize if model trained on normalized images
+    img_array = np.expand_dims(img_array, axis=0)  # Add batch dimension
+    return img_array
 
 # Маршрут для передбачень
 @app.post("/invocations")
-def predict(car_years: CarYears):
-    years_int = [int(year) for year in car_years.years]
-    input_data = pd.DataFrame({'year': years_int})
-
-    # Перетворення даних у тензор
-    input_tensor = torch.tensor(input_data.values, dtype=torch.float32)
-
-    # Передбачення моделі
-    predictions = model(input_tensor).detach().numpy().flatten()
-
-    prediction_data = pd.DataFrame({
-        'year': years_int,
-        'price': predictions.tolist()
+def predict(file: UploadFile = File(...)):
+    image_bytes = file.file.read()
+    input_tensor = preprocess_image(image_bytes)
+    preds = model.predict(input_tensor)
+    pred_class = CLASS_NAMES[int(np.argmax(preds))]
+    confidence = float(np.max(preds))
+    return JSONResponse({
+        "class": pred_class,
+        "confidence": confidence
     })
-
-    print("Input years:", years_int)
-    print("Predictions:", predictions.tolist())
-
-    return prediction_data.to_dict(orient='records')
 
 # Маршрут для перевірки стану сервісу
 @app.get("/ping")

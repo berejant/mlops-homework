@@ -41,7 +41,7 @@ https://docs.ray.io/en/latest/cluster/vms/references/ray-cluster-cli.html
 Спочатку перевіряємо роботу тренування локально
 ```bash
 pip install -r requirements.txt
-python train_yolo.py
+python train.py
 ```
 Тепер перевіряємо, щоб працював запуск тренування на кластері з локального середовища
 ```bash

@@ -8,6 +8,6 @@ wandb.login(key=wandb_api_key)
 
 run = wandb.init()
 
-artifact = run.use_artifact('berejant-set-university/linear-regression-pytorch/linear_regression_model:latest', type='model')
-path = artifact.get_path("linear_regression_model.pth")
+artifact = run.use_artifact('berejant-set-university/catdog-mobilenetv2/run_n0h1n2re_model:latest', type='model')
+path = artifact.get_path("wandb_model.keras")
 path.download('./model/')

@@ -1,5 +1,5 @@
-# Використовуємо базовий образ Bitnami PyTorch
-FROM bitnami/pytorch:2.3.1
+# Використовуємо офіційний образ TensorFlow (CPU)
+FROM tensorflow/tensorflow:latest
 
 # Створюємо директорію для кешу WANDB
 RUN mkdir -p /app/.cache/wandb
@@ -13,16 +13,12 @@ WORKDIR /app
 
 # Встановлюємо залежності
 COPY requirements.txt requirements.txt
-RUN pip install -r requirements.txt
+RUN pip install --no-cache-dir -r requirements.txt
 
 # Копіюємо необхідні файли
 COPY download_model.py download_model.py
 COPY main.py main.py
 COPY start.sh start.sh
-
-
-# Додатково видаляємо стандартний entrypoint Bitnami, якщо це необхідно
-RUN rm /opt/bitnami/scripts/pytorch/entrypoint.sh
 
 # Встановлюємо entrypoint на start.sh
 ENTRYPOINT ["./start.sh"]
